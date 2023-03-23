@@ -15,3 +15,45 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #    Emir Turkes can be contacted at emir.turkes@eturkes.com
+
+library(DEP)
+
+data <- read.delim(file.path("data", "report.pg_matrix.tsv"))
+
+# Use some regex magic to tidy up sample names.
+# ---------------------------------------------
+colnames(data) <- gsub("^.*?([0-9]+_[^_]+_[0-9]+_[^_]+).*", "\\1", colnames(data))
+colnames(data) <- c(colnames(data)[1:5], paste0("Donor", colnames(data)[6:60]))
+colnames(data) <- c(colnames(data)[1:5], sub("(.*_){1}(\\d+)_.+", "\\1TechRep\\2", colnames(data)[6:60]))
+# ---------------------------------------------
+
+# Remove proteins that do not have a gene annotation.
+# ---------------------------------------------------
+remove <- which(data$Genes == "")
+if (length(remove > 0)) { # Need to check that "remove" is non-empty.
+  data <- data[-remove, ]
+}
+# ---------------------------------------------------
+
+# Adds "name" and "id" columns to end of the data frame that contain one gene and protein name per row, as opposed to
+# several semicolon delimited entries as seen in the "Genes" and "Protein.Ids" columns.
+# -------------------------------------------------------------------------------------------------------------------
+data <- make_unique(data, names = "Genes", ids = "Protein.Ids")
+# -------------------------------------------------------------------------------------------------------------------
+
+# Create a data frame for metadata.
+# "label", "condition", and "replicate" are required for the DEP package.
+# -----------------------------------------------------------------------
+experimental_design <- data.frame(
+  label = colnames(data)[6:60],
+  condition = sub("^[^_]*_([^_]*).*", "\\1", colnames(data)[6:60]),
+  techrep = sub("(.*_){2}(\\d+)_.+", "TechRep\\2", colnames(data)[6:60]),
+  donor = sub("_.*", "", colnames(data)[6:60])
+)
+experimental_design$replicate <- paste(experimental_design$donor, experimental_design$techrep, sep = "_")
+# -----------------------------------------------------------------------
+
+# Create SummarizedExperiment object for use with DEP.
+# ----------------------------------------------------
+data <- make_se(data, columns = 6:60, expdesign = experimental_design)
+# ----------------------------------------------------
