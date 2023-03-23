@@ -47,7 +47,7 @@ data <- make_unique(data, names = "Genes", ids = "Protein.Ids")
 experimental_design <- data.frame(
   label = colnames(data)[6:60],
   condition = sub("^[^_]*_([^_]*).*", "\\1", colnames(data)[6:60]),
-  techrep = sub("(.*_){2}(\\d+)_.+", "TechRep\\2", colnames(data)[6:60]),
+  techrep = sub(".*_", "", colnames(data)[6:60]),
   donor = sub("_.*", "", colnames(data)[6:60])
 )
 experimental_design$replicate <- paste(experimental_design$donor, experimental_design$techrep, sep = "_")
