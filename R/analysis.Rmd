@@ -29,7 +29,11 @@ knit: (function(inputFile, encoding) {
 #
 #    Emir Turkes can be contacted at emir.turkes@eturkes.com
 
-library(DEP)
+# Best way to load a bunch of packages without tons of messages being produced.
+# -----------------------------------------------------------------------------
+packages <- "DEP"
+invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
+# -----------------------------------------------------------------------------
 
 data <- read.delim(file.path("..", "data", "report.pg_matrix.tsv"))
 
