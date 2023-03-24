@@ -31,7 +31,7 @@ knit: (function(inputFile, encoding) {
 
 # Best way to load a bunch of packages without tons of messages being produced.
 # -----------------------------------------------------------------------------
-packages <- c("DEP", "SummarizedExperiment")
+packages <- c("DEP", "SummarizedExperiment", "plotly")
 invisible(suppressPackageStartupMessages(lapply(packages, FUN = library, character.only = TRUE)))
 # -----------------------------------------------------------------------------
 
@@ -116,4 +116,41 @@ plot_imputation(orig, data)
 # -----------------------------------------------------------
 
 rm(orig) # Remove temporary objects.
+```
+
+# Analysis
+
+```{r, dpi = 96}
+# Manually perform PCA for more flexible plotting.
+# ------------------------------------------------
+pca <- prcomp(t(assay(data))) # Transpose because PCA assumes rows are observations and columns are variables.
+df <- as.data.frame(predict(pca)[ , 1:2]) # Extract the first two PCs.
+df$Condition <- data$condition
+df$Donor <- data$donor
+df$Sample <- colnames(data)
+summary <- summary(pca)$importance # Extract variance explained.
+# ------------------------------------------------
+
+# Plot PCA using ggplot2 rather than DEP's built-in function.
+# ggplots are also wrapped in ggplotly for interactivity.
+# -----------------------------------------------------------
+ggplotly(
+  ggplot(df, aes(PC1, PC2, color = Sample, text = paste("Donor:", Donor))) +
+    geom_point(aes(shape = Condition), size = 2, stroke = 1) +
+    labs(
+      x = paste0("PC1: ", round(summary[2, 1] * 100, digits = 1), "% of Variance Explained"),
+      y = paste0("PC2: ", round(summary[2, 2] * 100, digits = 1), "% of Variance Explained")
+    ) +
+    theme_bw()
+)
+ggplotly(
+  ggplot(df, aes(PC1, PC2, color = Donor, text = paste("Sample:", Sample))) +
+    geom_point(aes(shape = Condition), size = 2, stroke = 1) +
+    labs(
+      x = paste0("PC1: ", round(summary[2, 1] * 100, digits = 1), "% of Variance Explained"),
+      y = paste0("PC2: ", round(summary[2, 2] * 100, digits = 1), "% of Variance Explained")
+    ) +
+    theme_bw()
+)
+# -----------------------------------------------------------
 ```
