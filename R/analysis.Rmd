@@ -96,7 +96,9 @@ plot_missval(data)
 # Must remove samples where no proteins at all were detected.
 # -----------------------------------------------------------
 remove <- which(colSums(assay(data), na.rm = TRUE) == 0)
-data <- data[ , -remove]
+if (length(remove > 0)) {
+  data <- data[ , -remove]
+}
 # -----------------------------------------------------------
 
 # Normalise data using a variance stabilising transformation (VSN).
