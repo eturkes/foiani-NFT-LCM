@@ -32,7 +32,7 @@ knit: (function(inputFile, encoding) {
 # Best way to load a bunch of packages without tons of messages being produced.
 # -----------------------------------------------------------------------------
 packages <- "DEP"
-invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
+invisible(suppressPackageStartupMessages(lapply(packages, FUN = library, character.only = TRUE)))
 # -----------------------------------------------------------------------------
 
 knitr::opts_chunk$set(dpi = 300, fig.width = 12, fig.height = 7) # Produce high-quality images with better sizes.
@@ -41,9 +41,11 @@ data <- read.delim(file.path("..", "data", "report.pg_matrix.tsv"))
 
 # Use some regex magic to tidy up sample names.
 # ---------------------------------------------
-colnames(data) <- gsub("^.*?([0-9]+_[^_]+_[0-9]+_[^_]+).*", "\\1", colnames(data))
+colnames(data) <- sub("^.*?([0-9]+_[^_]+_[0-9]+_[^_]+).*", replacement = "\\1", x = colnames(data))
 colnames(data) <- c(colnames(data)[1:5], paste0("Donor", colnames(data)[6:60]))
-colnames(data) <- c(colnames(data)[1:5], sub("(.*_){1}(\\d+)_.+", "\\1TechRep\\2", colnames(data)[6:60]))
+colnames(data) <- c(
+  colnames(data)[1:5], sub("(.*_){1}(\\d+)_.+", replacement = "\\1TechRep\\2", colnames(data)[6:60])
+)
 # ---------------------------------------------
 
 # Remove proteins that do not have a gene annotation.
@@ -65,9 +67,9 @@ data <- make_unique(data, names = "Genes", ids = "Protein.Ids")
 # -----------------------------------------------------------------------
 experimental_design <- data.frame(
   label = colnames(data)[6:60],
-  condition = sub("^[^_]*_([^_]*).*", "\\1", colnames(data)[6:60]),
-  techrep = sub(".*_", "", colnames(data)[6:60]),
-  donor = sub("_.*", "", colnames(data)[6:60])
+  condition = sub("^[^_]*_([^_]*).*", replacement = "\\1", colnames(data)[6:60]),
+  techrep = sub(".*_", replacement = "", colnames(data)[6:60]),
+  donor = sub("_.*", replacement = "", colnames(data)[6:60])
 )
 experimental_design$replicate <- paste(experimental_design$donor, experimental_design$techrep, sep = "_")
 # -----------------------------------------------------------------------
