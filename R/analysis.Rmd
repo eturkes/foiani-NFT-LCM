@@ -37,7 +37,7 @@ invisible(suppressPackageStartupMessages(lapply(packages, FUN = library, charact
 
 knitr::opts_chunk$set(dpi = 300, fig.width = 12, fig.height = 8) # Produce high-quality images with better sizes.
 
-data <- read.delim(file.path("..", "data", "report.pg_matrix.tsv"))
+data <- read.delim(file.path("..", "data", "report.pg_matrix.tsv")) # Read in data.
 
 # Use some regex magic to tidy up sample names.
 # ---------------------------------------------
