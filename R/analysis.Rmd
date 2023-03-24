@@ -1,3 +1,16 @@
+---
+title: "Foiani NFT LCM Analysis"
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(
+    inputFile,
+    encoding = encoding,
+    output_file = file.path("..", "results", "analysis.html")
+  )})
+---
+
+# Data Cleaning and Prep
+
+```{r}
 #    This file is part of foiani-NFT-LCM.
 #    Copyright (C) 2023  Emir Turkes, Martha Foiani, UK DRI at UCL
 #
@@ -18,7 +31,7 @@
 
 library(DEP)
 
-data <- read.delim(file.path("data", "report.pg_matrix.tsv"))
+data <- read.delim(file.path("..", "data", "report.pg_matrix.tsv"))
 
 # Use some regex magic to tidy up sample names.
 # ---------------------------------------------
@@ -35,11 +48,11 @@ if (length(remove > 0)) { # Need to check that "remove" is non-empty.
 }
 # ---------------------------------------------------
 
-# Adds "name" and "id" columns to end of the data frame that contain one gene and protein name per row, as opposed to
-# several semicolon delimited entries as seen in the "Genes" and "Protein.Ids" columns.
-# -------------------------------------------------------------------------------------------------------------------
+# Adds "name" and "id" columns to end of the data frame that contain one gene and protein name per row, as
+# opposed to several semicolon delimited entries as seen in the "Genes" and "Protein.Ids" columns.
+# --------------------------------------------------------------------------------------------------------
 data <- make_unique(data, names = "Genes", ids = "Protein.Ids")
-# -------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------------
 
 # Create a data frame for metadata.
 # "label", "condition", and "replicate" are required for the DEP package.
@@ -57,3 +70,4 @@ experimental_design$replicate <- paste(experimental_design$donor, experimental_d
 # ----------------------------------------------------
 data <- make_se(data, columns = 6:60, expdesign = experimental_design)
 # ----------------------------------------------------
+```
