@@ -31,11 +31,11 @@ knit: (function(inputFile, encoding) {
 
 # Best way to load a bunch of packages without tons of messages being produced.
 # -----------------------------------------------------------------------------
-packages <- "DEP"
+packages <- c("DEP", "SummarizedExperiment")
 invisible(suppressPackageStartupMessages(lapply(packages, FUN = library, character.only = TRUE)))
 # -----------------------------------------------------------------------------
 
-knitr::opts_chunk$set(dpi = 300, fig.width = 12, fig.height = 7) # Produce high-quality images with better sizes.
+knitr::opts_chunk$set(dpi = 300, fig.width = 12, fig.height = 8) # Produce high-quality images with better sizes.
 
 data <- read.delim(file.path("..", "data", "report.pg_matrix.tsv"))
 
@@ -78,4 +78,42 @@ experimental_design$replicate <- paste(experimental_design$donor, experimental_d
 # ----------------------------------------------------
 data <- make_se(data, columns = 6:60, expdesign = experimental_design)
 # ----------------------------------------------------
+```
+
+# Preprocessing
+
+```{r}
+hist(assay(data), n = 100) # Visualise data distribution.
+
+# Various plotting methods to assess missing values.
+# --------------------------------------------------
+plot_numbers(data)
+plot_frequency(data)
+plot_detect(data)
+plot_missval(data)
+# --------------------------------------------------
+
+# Must remove samples where no proteins at all were detected.
+# -----------------------------------------------------------
+remove <- which(colSums(assay(data), na.rm = TRUE) == 0)
+data <- data[ , -remove]
+# -----------------------------------------------------------
+
+# Normalise data using a variance stabilising transformation (VSN).
+# -----------------------------------------------------------------
+orig <- data # Make a copy of the pre-normalised data for plotting later.
+data <- normalize_vsn(data)
+meanSdPlot(data)
+plot_normalization(orig)
+plot_normalization(data)
+# -----------------------------------------------------------------
+
+# Impute data using the k-nearest neighbors algorithmn (KNN).
+# -----------------------------------------------------------
+orig <- data
+data <- impute(data, fun = "knn", colmax = 100)
+plot_imputation(orig, data)
+# -----------------------------------------------------------
+
+rm(orig) # Remove temporary objects.
 ```
