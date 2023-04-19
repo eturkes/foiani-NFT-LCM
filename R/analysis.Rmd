@@ -77,6 +77,7 @@ experimental_design$replicate <- paste(experimental_design$donor, experimental_d
 # Create SummarizedExperiment object for use with DEP.
 # ----------------------------------------------------
 data <- make_se(data, columns = 6:60, expdesign = experimental_design)
+data_bak <- data # Make a copy of unprocessed data for later.
 # ----------------------------------------------------
 ```
 
@@ -120,7 +121,7 @@ plot_imputation(orig, data)
 rm(orig) # Remove temporary objects.
 ```
 
-# Analysis
+# PCA
 
 ```{r, dpi = 96}
 # Manually perform PCA for more flexible plotting.
@@ -155,4 +156,24 @@ ggplotly(
     theme_bw()
 )
 # -----------------------------------------------------------
+```
+
+# Subsetting
+
+```{r}
+keep <- rownames(df[which(df$PC1 < 0 & df$PC2 > 0), ]) # Top left of PCA seems to have highest quality results.
+data_bak_sub <- data_bak[ , keep] # Use unprocessed copy to visualise missing values.
+
+plot_numbers(data_bak_sub)
+
+remove <- which(data_bak_sub$donor == "Donor9") # Remove Donor9 because there are no good tangle-neg. samples.
+data_bak_sub <- data_bak_sub[ , -remove]
+
+plot_numbers(data_bak_sub)
+
+# Apply subsetting to the processed dataset.
+# ------------------------------------------
+data <- data[ , keep]
+data <- data[ , -remove]
+# ------------------------------------------
 ```
