@@ -225,3 +225,47 @@ ggplotly(
 )
 # -----------------------------------------------------------
 ```
+
+# Reprocessing
+
+We start with the unprocessed data again, this time with the low-quality samples removed in order to achieve better proprocessing.
+
+```{r}
+data <- data_bak_sub # Make the main data object the unprocessed version.
+
+hist(assay(data), n = 100) # Visualise data distribution.
+
+# Various plotting methods to assess missing values.
+# --------------------------------------------------
+plot_numbers(data)
+plot_frequency(data)
+plot_detect(data)
+plot_missval(data)
+# --------------------------------------------------
+
+# Must remove samples where no proteins at all were detected.
+# -----------------------------------------------------------
+remove <- which(colSums(assay(data), na.rm = TRUE) == 0)
+if (length(remove > 0)) {
+  data <- data[ , -remove]
+}
+# -----------------------------------------------------------
+
+# Normalise data using a variance stabilising transformation (VSN).
+# -----------------------------------------------------------------
+orig <- data # Make a copy of the pre-normalised data for plotting later.
+data <- normalize_vsn(data)
+meanSdPlot(data)
+plot_normalization(orig)
+plot_normalization(data)
+# -----------------------------------------------------------------
+
+# Impute data using the k-nearest neighbors algorithmn (KNN).
+# -----------------------------------------------------------
+orig <- data
+data <- impute(data, fun = "knn", colmax = 100)
+plot_imputation(orig, data)
+# -----------------------------------------------------------
+
+rm(orig) # Remove temporary objects.
+```
