@@ -10,6 +10,8 @@ knit: (function(inputFile, encoding) {
 
 # Data Cleaning and Prep
 
+In this section, the raw data is read into R and manipulated as necessary to create a `SummarizedExperiment` object for use with the `DEP` package.
+
 ```{r}
 #    This file is part of foiani-NFT-LCM.
 #    Copyright (C) 2023  Emir Turkes, Martha Foiani, UK DRI at UCL
@@ -83,6 +85,8 @@ data_bak <- data # Make a copy of unprocessed data for later.
 
 # Preprocessing
 
+Basic QC visualisations are shown here and the data is normalised and imputed, using standard methods.
+
 ```{r}
 hist(assay(data), n = 100) # Visualise data distribution.
 
@@ -123,6 +127,9 @@ rm(orig) # Remove temporary objects.
 
 # PCA
 
+Create PCA plots for the data.
+The plots have interactive features when moused-over.
+
 ```{r, dpi = 96}
 # Manually perform PCA for more flexible plotting.
 # ------------------------------------------------
@@ -160,6 +167,8 @@ ggplotly(
 
 # Subsetting
 
+Subset the data to those samples that group together on the basis of missing fewer values.
+
 ```{r}
 keep <- rownames(df[which(df$PC1 < 0 & df$PC2 > 0), ]) # Top left of PCA seems to have highest quality results.
 data_bak_sub <- data_bak[ , keep] # Use unprocessed copy to visualise missing values.
@@ -179,6 +188,8 @@ data <- data[ , -remove]
 ```
 
 # PCA
+
+Create more PCA plots after subsetting.
 
 ```{r, dpi = 96}
 # Manually perform PCA for more flexible plotting.
