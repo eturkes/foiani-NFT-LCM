@@ -381,16 +381,16 @@ plot + geom_vline(xintercept = Pos_MNAR_cutoff) + ggtitle("Pos")
 # We choose row means over medians because high expression outliers may be decent indication a
 # protein is not MNAR.
 # --------------------------------------------------------------------------------------------
-Neg_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.1")], TRUE))
+Neg_order <- order(rowMeans(assay(data)[ , which(data$condition == "Neg")], TRUE))
 data <- data[Neg_order, ]
 Neg_MNAR <- names(
-  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.1")], TRUE) < Neg_MNAR_cutoff)
+  which(rowMeans(assay(data)[ , which(data$condition == "Neg")], TRUE) < Neg_MNAR_cutoff)
 )
 
-Pos_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.1")], TRUE))
+Pos_order <- order(rowMeans(assay(data)[ , which(data$condition == "Pos")], TRUE))
 data <- data[Pos_order, ]
 Pos_MNAR <- names(
-  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.1")], TRUE) < Pos_MNAR_cutoff)
+  which(rowMeans(assay(data)[ , which(data$condition == "Pos")], TRUE) < Pos_MNAR_cutoff)
 )
 # --------------------------------------------------------------------------------------------
 
@@ -447,7 +447,6 @@ MNAR <- unique(append(Neg_MNAR_passQC, Pos_MNAR_passQC))
 # -----------------------------------------------
 keep <- unique(append(MAR, MNAR))
 data <- data[rownames(data) %in% keep, ]
-data
 # -----------------------------------------------
 
 # Normalise data using a variance stabilising transformation (VSN).
