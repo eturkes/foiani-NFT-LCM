@@ -34,7 +34,8 @@ In this section, the raw data is read into R and manipulated as necessary to cre
 # Best way to load a bunch of packages without tons of messages being produced.
 # -----------------------------------------------------------------------------
 packages <- c(
-  "DEP", "SummarizedExperiment", "plotly", "limma", "dplyr", "DT", "ComplexHeatmap", "colorRamp2", "RColorBrewer"
+  "DEP", "SummarizedExperiment", "plotly", "limma", "dplyr", "DT", "ComplexHeatmap", "colorRamp2",
+  "RColorBrewer", "readxl"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, FUN = library, character.only = TRUE)))
 # -----------------------------------------------------------------------------
@@ -66,21 +67,43 @@ if (length(remove > 0)) { # Need to check that "remove" is non-empty.
 data <- make_unique(data, names = "Genes", ids = "Protein.Ids")
 # --------------------------------------------------------------------------------------------------------
 
+N1_data <- read_excel(file.path("..", "data", "LCM_DEPs raw data.xlsx")) # Read in N1 data.
+
+# Merge datasets.
+# ---------------
+N1_data <- N1_data[N1_data$Genes %in% data$name, ] # Subset to common proteins.
+data <- data[data$name %in% N1_data$Genes, ]
+
+dup <- which(duplicated(N1_data$Genes)) # Remove duplicates in "N1_data".
+N1_data <- N1_data[-dup, ]
+
+N1_data[match(N1_data$Genes, data$name), ] # Match order of proteins.
+
+data <- cbind(data, N1_data[ , 14:20]) # Merge
+rm(N1_data) # "N1_data" object no longer needed.
+data <- data[ , c(1:60, 63:ncol(data), 61:62)] # Fix order.
+colnames(data) <- c( # Make naming scheme consistent. Use "Donor0" for "N1_data" samples.
+  colnames(data)[1:60], "Donor0_Pos_TechRep1", "Donor0_Pos_TechRep2",
+  "Donor0_Pos_TechRep3", "Donor0_Neg_TechRep1", "Donor0_Neg_TechRep2",
+  "Donor0_Neg_TechRep3", "Donor0_Neg_TechRep4", colnames(data[68:69])
+)
+# ---------------
+
 # Create a data frame for metadata.
 # "label", "condition", and "replicate" are required for the DEP package.
 # -----------------------------------------------------------------------
 experimental_design <- data.frame(
-  label = colnames(data)[6:60],
-  condition = sub("^[^_]*_([^_]*).*", replacement = "\\1", colnames(data)[6:60]),
-  techrep = sub(".*_", replacement = "", colnames(data)[6:60]),
-  donor = sub("_.*", replacement = "", colnames(data)[6:60])
+  label = colnames(data)[6:67],
+  condition = sub("^[^_]*_([^_]*).*", replacement = "\\1", colnames(data)[6:67]),
+  techrep = sub(".*_", replacement = "", colnames(data)[6:67]),
+  donor = sub("_.*", replacement = "", colnames(data)[6:67])
 )
 experimental_design$replicate <- paste(experimental_design$donor, experimental_design$techrep, sep = "_")
 # -----------------------------------------------------------------------
 
 # Create SummarizedExperiment object for use with DEP.
 # ----------------------------------------------------
-data <- make_se(data, columns = 6:60, expdesign = experimental_design)
+data <- make_se(data, columns = 6:67, expdesign = experimental_design)
 data_bak <- data # Make a copy of unprocessed data for later.
 # ----------------------------------------------------
 ```
@@ -173,7 +196,7 @@ ggplotly(
 Subset the data to those samples that group together on the basis of missing fewer values.
 
 ```{r}
-keep <- rownames(df[which(df$PC1 < 0 & df$PC2 > 5), ]) # Top left of PCA seems to have highest quality results.
+keep <- rownames(df[which(df$PC1 < 31 & df$PC1 > -25 & df$PC2 < -20 | df$PC2 > 50), ])
 data_bak_sub <- data_bak[ , keep] # Use unprocessed copy to visualise missing values.
 
 plot_numbers(data_bak_sub)
