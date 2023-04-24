@@ -120,6 +120,7 @@ plot_normalization(data)
 # Impute data using the MinProb algorithmn.
 # -----------------------------------------
 orig <- data
+set.seed(1)
 data <- impute(data, fun = "MinProb")
 plot_imputation(orig, data)
 # -----------------------------------------
@@ -265,6 +266,7 @@ plot_normalization(data)
 # Impute data using the MinProb algorithmn.
 # -----------------------------------------
 orig <- data
+set.seed(1)
 data <- impute(data, fun = "MinProb")
 plot_imputation(orig, data)
 # -----------------------------------------
