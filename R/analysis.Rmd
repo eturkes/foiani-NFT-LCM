@@ -570,7 +570,9 @@ sig <- results[results$significant, ]
 print(paste0(nrow(sig), " significant proteins."))
 
 results <- results[order(results$Pos_vs_Neg_p.val), ] # Order by unadjusted p-value.
-datatable_download(results) # Careful, there is no p-value cutoff applied.
+datatable_download(results) # Without p-value cutoff.
+results <- results[results$Pos_vs_Neg_p.val < 0.05, ]
+datatable_download(results) # With 0.05 p-value cutoff.
 
 heatmap_data <- assay(data)[rownames(data) %in% results$name[1:20], ] # Plot top 20 proteins.
 colour <- colorRamp2( # Create a custom colour palette.
