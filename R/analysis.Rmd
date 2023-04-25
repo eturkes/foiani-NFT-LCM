@@ -569,7 +569,7 @@ results <- get_results(data_results)
 sig <- results[results$significant, ]
 print(paste0(nrow(sig), " significant proteins."))
 
-results <- results[match(sort(results$Pos_vs_Neg_p.val), results$Pos_vs_Neg_p.val), ] # Sort by unadjusted p-val.
+results <- results[order(results$Pos_vs_Neg_p.val), ] # Order by unadjusted p-value.
 datatable_download(results) # Careful, there is no p-value cutoff applied.
 
 heatmap_data <- assay(data)[rownames(data) %in% results$name[1:20], ] # Plot top 20 proteins.
