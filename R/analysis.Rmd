@@ -609,4 +609,42 @@ Heatmap(
   column_gap = unit(2, "mm"),
   heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot")
 )
+
+results <- results[order(results$Pos_vs_Neg_ratio), ] # Order by log2 fold change.
+
+heatmap_data <- assay(data)[rownames(data) %in% results$name[1:20], ] # Plot top 20 proteins.
+colour <- colorRamp2( # Create a custom colour palette.
+  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  col = colour,
+  column_names_side = "top",
+  cluster_columns = FALSE,
+  cluster_rows = FALSE,
+  row_order = match(results$name[1:20], rownames(heatmap_data)),
+  column_split = data$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot")
+)
+
+heatmap_data <- t( # Perform row-wise scaling.
+  apply(heatmap_data, MARGIN = 1, FUN = function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1))
+)
+colour2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  col = colour2,
+  column_names_side = "top",
+  cluster_columns = FALSE,
+  cluster_rows = FALSE,
+  row_order = match(results$name[1:20], rownames(heatmap_data)),
+  column_split = data$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot")
+)
 ```
