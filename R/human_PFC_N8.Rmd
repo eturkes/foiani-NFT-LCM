@@ -1,10 +1,10 @@
 ---
-title: "Foiani NFT LCM Analysis"
+title: "Human PFC N8 Analysis"
 knit: (function(inputFile, encoding) {
   rmarkdown::render(
     inputFile,
     encoding = encoding,
-    output_file = file.path("..", "results", "analysis.html")
+    output_file = file.path("..", "results", "human_PFC_N8.html")
   )})
 ---
 
