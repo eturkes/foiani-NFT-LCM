@@ -83,6 +83,8 @@ experimental_design$replicate <- paste(experimental_design$donor, experimental_d
 data <- make_se(data, columns = 6:60, expdesign = experimental_design)
 data_bak <- data # Make a copy of unprocessed data for later.
 # ----------------------------------------------------
+
+experimental_design$label <- colnames(data) # make_se changes colnames for some reason.
 ```
 
 # Preprocessing
@@ -116,7 +118,80 @@ meanSdPlot(data)
 plot_normalization(orig)
 plot_normalization(data)
 # -----------------------------------------------------------------
+```
 
+```{r}
+# Check proteins of interest.
+# ---------------------------
+keep <- grep("MAPT|SQSTM1", rownames(data))
+tmp <- assay(data)[keep, ]
+
+remove <- which(colSums(tmp, na.rm = TRUE) == 0)
+if (length(remove > 0)) {
+  tmp <- tmp[ , -remove]
+}
+
+set.seed(1)
+draw(
+  Heatmap(
+    tmp[ , order(colnames(tmp))],
+    cluster_rows = FALSE,
+    cluster_columns = FALSE,
+    column_split = c(rep("Neg", 15), rep("Pos", 18)))
+)
+set.seed(1)
+draw(
+  Heatmap(
+    t(
+      apply(
+        tmp[ , order(colnames(tmp))],
+        MARGIN = 1,
+        FUN = function (x) ((2 * (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE))) - 1)
+      )
+    ),
+    cluster_rows = FALSE,
+    cluster_columns = FALSE,
+    column_split = c(rep("Neg", 15), rep("Pos", 18)))
+)
+
+tmp_design <- experimental_design[experimental_design$label %in% colnames(tmp), ]
+design_formula <- model.matrix(~ 0 + tmp_design$condition)
+corr_fit <- duplicateCorrelation(tmp, design = design_formula, block = tmp_design$donor)
+
+tmp <- removeBatchEffect(
+  tmp,
+  batch = tmp_design$donor,
+  design = model.matrix(
+    ~ 0 + tmp_design$condition, block = tmp_design$donor, cor = corr_fit$consensus.correlation
+  )
+)
+
+set.seed(1)
+draw(
+  Heatmap(
+    tmp[ , order(colnames(tmp))],
+    cluster_rows = FALSE,
+    cluster_columns = FALSE,
+    column_split = c(rep("Neg", 15), rep("Pos", 18)))
+)
+set.seed(1)
+draw(
+  Heatmap(
+    t(
+      apply(
+        tmp[ , order(colnames(tmp))],
+        MARGIN = 1,
+        FUN = function (x) ((2 * (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE))) - 1)
+      )
+    ),
+    cluster_rows = FALSE,
+    cluster_columns = FALSE,
+    column_split = c(rep("Neg", 15), rep("Pos", 18)))
+)
+# ---------------------------
+```
+
+```{r}
 # Impute data using the MinProb algorithmn.
 # -----------------------------------------
 orig <- data
